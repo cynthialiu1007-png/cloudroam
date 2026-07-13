@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --letterbox-height: 12vh;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-midnight text-ivory font-sans;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    background: rgba(212, 185, 108, 0.35);
+    color: #F5F1E8;
+  }
+
+  /* 让链接下划线始终扁平 */
+  a {
+    text-underline-offset: 0.25em;
+  }
+}
+
+@layer components {
+  /* 电影上下黑边 */
+  .letterbox {
+    height: var(--letterbox-height);
+  }
+
+  /* 场景描述文字：文学感 —— 大号，慢节奏行距 */
+  .scene-copy {
+    @apply font-serif text-body-scene text-ivory;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* 大号 mono 倒计时 */
+  .timecode {
+    @apply font-mono tabular-nums text-brass tracking-wider2;
+  }
+
+  /* 眉标 —— 仅用于顶栏和 Fin 结尾这种"电影字幕"位置 */
+  .eyebrow {
+    @apply font-mono uppercase text-caption text-ivory-dim;
+  }
+
+  /* 显示型标题 —— 极细字重 + 极大字号 */
+  .display-hero {
+    @apply font-serif font-display text-display-hero text-ivory;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
