@@ -25,8 +25,18 @@ export function MyJourneysList() {
   const [enriched, setEnriched] = useState<EnrichedJourney[]>([])
   const [loading, setLoading] = useState(true)
 
+  // 每次渲染都从 localStorage 读最新数据（修复：软导航返回后不刷新问题）
+  const latestEntries = getMyJourneys()
+
   useEffect(() => {
-    setEntries(getMyJourneys())
+    setEntries(latestEntries)
+    // 监听 focus 事件，用户从房间页返回时重新加载
+    const onFocus = () => {
+      const fresh = getMyJourneys()
+      setEntries(fresh)
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [])
 
   useEffect(() => {

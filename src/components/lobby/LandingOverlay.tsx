@@ -1,18 +1,58 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TypewriterSequence } from '@/components/TypewriterSequence'
 
 /**
  * Landing Overlay —— 先导页覆盖层
  *
- * 覆盖在首页上方，显示视频背景 + 打字机文案 + CTA 按钮。
- * 点击 CTA 后整层 fade out，露出下方首页。
+ * 只在第一次访问时显示（通过 localStorage 记住）。
+ * 刷新、返回、再次进入 / 都直接看首页，不再重复播放。
+ *
+ * 两个退出方式：
+ *   - 点"推开这扇窗 →"（CTA）—— 文案播放完成后出现
+ *   - 点"跳过 →" —— 任何时候都可以
  */
+const LANDING_SEEN_KEY = 'cloudroam:landingSeen'
+
+function hasSeenLanding(): boolean {
+  if (typeof window === 'undefined') return true
+  try {
+    // URL 带 ?intro=1 时强制重播（方便分享 / 演示）
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('intro') === '1') return false
+    return localStorage.getItem(LANDING_SEEN_KEY) === '1'
+  } catch {
+    return true
+  }
+}
+
+function markLandingSeen(): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(LANDING_SEEN_KEY, '1')
+  } catch {
+    // 静默失败
+  }
+}
+
 export function LandingOverlay({ children }: { children: React.ReactNode }) {
+  const skipIntro = hasSeenLanding()
   const [showCTA, setShowCTA] = useState(false)
   const [isExiting, setIsExiting] = useState(false)
+
+  // 退出时标记已看过
+  useEffect(() => {
+    if (isExiting) {
+      markLandingSeen()
+    }
+  }, [isExiting])
+
+  // 已经看过的用户，直接返回首页内容
+  if (skipIntro || isExiting) {
+    return <>{children}</>
+  }
 
   const lines = [
     { text: '一扇窗，爬满了春天的藤蔓。', delay: 800 },
@@ -28,13 +68,8 @@ export function LandingOverlay({ children }: { children: React.ReactNode }) {
     { text: '只有此刻，和路上的人。' },
   ]
 
-  if (isExiting) {
-    return <>{children}</>
-  }
-
   return (
     <div className="relative min-h-screen">
-      {/* Landing Overlay */}
       <AnimatePresence>
         {!isExiting && (
           <motion.div
@@ -66,6 +101,14 @@ export function LandingOverlay({ children }: { children: React.ReactNode }) {
                 `,
               }}
             />
+
+            {/* 右上角：跳过按钮 */}
+            <button
+              onClick={() => setIsExiting(true)}
+              className="absolute right-6 top-6 z-20 font-mono text-caption tracking-wider2 text-ivory/50 transition-colors hover:text-brass md:right-12 md:top-8"
+            >
+              跳过导览 →
+            </button>
 
             {/* 内容层 */}
             <div className="relative z-10 flex flex-col items-center px-6 py-16 md:px-12">
